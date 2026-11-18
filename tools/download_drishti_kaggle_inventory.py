@@ -1,4 +1,4 @@
-"""Download a third-party DRISHTI-GS Kaggle mirror for provisional inventory only."""
+"""Download the user-selected DRISHTI-GS Kaggle mirror with explicit provenance."""
 from __future__ import annotations
 
 import hashlib
@@ -58,8 +58,8 @@ record = {
     "url": f"https://www.kaggle.com/datasets/{DATASET}",
     "kaggle_metadata_license": "Kaggle page advertises CC0",
     "official_terms": "Official IIIT page limits use to academic/research and prohibits redistribution except within the registered team",
-    "provisional_only": True,
-    "excluded_from_final_training_until_officially_verified": True,
+    "mirror_based_experiment": True,
+    "official_source_verified": False,
     "bytes": TARGET.stat().st_size,
     "sha256": sha256(TARGET),
 }

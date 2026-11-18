@@ -53,14 +53,10 @@ to_tensor = ToTensor()
 normalize = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
-def left_image_and_disc(archive: zipfile.ZipFile, record: dict) -> tuple[Image.Image, np.ndarray]:
+def left_image(archive: zipfile.ZipFile, record: dict) -> Image.Image:
     with Image.open(io.BytesIO(archive.read(record["image"]))).convert("RGB") as image:
         left = image.crop((0, 0, image.width // 2, image.height)).resize((256, 256), Image.Resampling.BICUBIC)
-    with Image.open(io.BytesIO(archive.read(record["disc_mask"]))).convert("L") as mask:
-        disc = mask.crop((0, 0, mask.width // 2, mask.height)).resize(
-            (256, 256), Image.Resampling.NEAREST
-        )
-    return left, np.asarray(disc) > 127
+    return left
 
 
 def predicted_disc(image: Image.Image) -> np.ndarray:
@@ -102,8 +98,8 @@ members = []
 with zipfile.ZipFile("data/raw/RIM-ONE-r3.zip") as archive, torch.no_grad():
     for row in binary:
         record = manifest[row["image"]]
-        image, truth_disc = left_image_and_disc(archive, record)
-        disc = truth_disc if row["split"] in ("train", "val") else predicted_disc(image)
+        image = left_image(archive, record)
+        disc = predicted_disc(image)
         variants = {
             "whole": whole_image(image),
             "crop": crop_disc(image, disc),
@@ -127,7 +123,7 @@ test = np.where(splits == "test")[0]
 comparison = {"dataset": "RIM-ONE r3", "seed": SEED, "n_train": len(train),
               "n_val": len(val), "n_test": len(test), "protocol": {
                   "whole": "left stereo fundus view letterboxed to 224x224",
-                  "crop": "disc crop: ground-truth masks in train/val; saved U-Net predicted disc mask in test",
+                  "crop": "disc crop from saved U-Net predicted disc mask in every split; no classification ground-truth mask crop",
               }, "selection_metric": "validation AUC", "candidates": (0.01, 0.1, 1.0, 10.0)}
 
 for name in ("whole", "crop"):

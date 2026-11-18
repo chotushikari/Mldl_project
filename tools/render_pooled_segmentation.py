@@ -52,7 +52,7 @@ def load_record(row):
         with Image.open(io.BytesIO(combined.read(row["mask"]))).convert("L") as mask:
             mask = mask.resize((SIZE, SIZE), Image.Resampling.NEAREST)
             values = np.asarray(mask)
-        truth = np.stack((values == 1, values == 2)).astype("float32")
+        truth = np.stack((values > 0, values == 2)).astype("float32")
     return image, truth
 
 

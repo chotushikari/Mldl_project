@@ -27,6 +27,7 @@ random.seed(SEED)
 np.random.seed(SEED)
 torch.manual_seed(SEED)
 torch.set_num_threads(4)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 root = Path("outputs/pooled_segmentation")
 root.mkdir(parents=True, exist_ok=True)
@@ -132,7 +133,7 @@ class PooledSegmentation(Dataset):
                     values = np.asarray(mask)
                     if row["dataset"] == "REFUGE" and set(np.unique(values)).issubset({0, 1, 2}):
                         pass
-                truth = np.stack((values == 1, values == 2)).astype("float32")
+                truth = np.stack((values > 0, values == 2)).astype("float32")
             pixels = np.asarray(image).copy()
             self.data.append((pixels, truth))
 
@@ -160,7 +161,7 @@ train_ds = PooledSegmentation(train, augment=True)
 val_ds = PooledSegmentation(val)
 test_ds = PooledSegmentation(test)
 
-model = UNet()
+model = UNet().to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
 bce = nn.BCEWithLogitsLoss()
 history = []
@@ -173,7 +174,7 @@ def scores(model: nn.Module, dataset: Dataset) -> np.ndarray:
     count = 0
     with torch.no_grad():
         for x, y in DataLoader(dataset, batch_size=4):
-            pred = (model(x).sigmoid() > 0.5).numpy()
+            pred = (model(x.to(device)).sigmoid() > 0.5).cpu().numpy()
             truth = y.numpy() > 0
             for channel in range(2):
                 p = pred[:, channel]
@@ -192,6 +193,7 @@ for epoch in range(1, EPOCHS + 1):
     model.train()
     losses = []
     for x, y in DataLoader(train_ds, batch_size=4, shuffle=True):
+        x, y = x.to(device), y.to(device)
         logits = model(x)
         prob = logits.sigmoid()
         dice = 1 - (
@@ -216,7 +218,7 @@ for epoch in range(1, EPOCHS + 1):
         torch.save(model.state_dict(), root / "best.pt")
     print(history[-1], flush=True)
 
-model.load_state_dict(torch.load(root / "best.pt", map_location="cpu", weights_only=True))
+model.load_state_dict(torch.load(root / "best.pt", map_location=device, weights_only=True))
 with (root / "history.json").open("w", encoding="utf-8") as stream:
     json.dump(history, stream, indent=2)
 
@@ -249,6 +251,7 @@ counts = {
 summary = {
     "status": "three_dataset_partial_segmentation",
     "architecture": "compact randomly initialized UNet",
+    "device": str(device),
     "size": SIZE,
     "seed": SEED,
     "epochs": EPOCHS,
