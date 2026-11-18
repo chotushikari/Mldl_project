@@ -1,5 +1,7 @@
 # Glaucoma classification, disc/cup segmentation, and XAI
 
+Dataset setup: [DATASETS.md](DATASETS.md). Raw images are intentionally excluded from GitHub.
+
 For a team-ready summary of completed work, remaining tasks, key files, commands, and a continuation prompt, read `TEAM_HANDOFF.md`.
 
 For a training-specific explanation of every implemented model, split, saved artifact, and final training plan, read `TRAINING_IMPLEMENTATION.md`.
