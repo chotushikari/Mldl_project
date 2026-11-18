@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glaucoma MLDL - Measured Results</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">MEASURED PARTIAL CHECKPOINT</p>
+    <h1>Glaucoma classification and segmentation</h1>
+    <p>Frozen baselines, fixed splits, per-image predictions, and saved explainability examples.</p>
+  </header>
+  <main>
+    <section class="notice">
+      <strong>Partial results only.</strong>
+      DRISHTI-GS1 is not included. These cards come exclusively from saved measured artifacts.
+    </section>
+    <section id="summary" class="summary"></section>
+    <section>
+      <div class="section-heading">
+        <h2>Experiment record</h2>
+        <label>Dataset
+          <select id="dataset-filter">
+            <option value="all">All datasets</option>
+          </select>
+        </label>
+      </div>
+      <div id="experiments" class="cards"></div>
+    </section>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>

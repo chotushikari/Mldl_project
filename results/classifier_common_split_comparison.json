@@ -1,0 +1,117 @@
+{
+  "protocol": "Both models evaluated on identical held-out images; ORIGA B, REFUGE official validation, ACRIMA fixed test, RIM-ONE non-suspect fixed test subset",
+  "results": {
+    "ACRIMA": {
+      "ACRIMA-only frozen": {
+        "n_test": 141,
+        "accuracy": 0.9078014184397163,
+        "balanced_accuracy": 0.9038383013474888,
+        "precision": 0.9024390243902439,
+        "recall": 0.9367088607594937,
+        "f1": 0.9192546583850931,
+        "auc": 0.9783585136790527,
+        "TN": 54,
+        "FP": 8,
+        "FN": 5,
+        "TP": 74
+      },
+      "Pooled four-dataset frozen": {
+        "n_test": 141,
+        "accuracy": 0.8581560283687943,
+        "balanced_accuracy": 0.8525928950592079,
+        "precision": 0.8554216867469879,
+        "recall": 0.8987341772151899,
+        "f1": 0.8765432098765432,
+        "auc": 0.9250714577378523,
+        "TN": 50,
+        "FP": 12,
+        "FN": 8,
+        "TP": 71
+      }
+    },
+    "ORIGA": {
+      "ACRIMA-only frozen": {
+        "n_test": 325,
+        "accuracy": 0.2953846153846154,
+        "balanced_accuracy": 0.5021739130434782,
+        "precision": 0.2932098765432099,
+        "recall": 1.0,
+        "f1": 0.45346062052505964,
+        "auc": 0.3669794050343249,
+        "TN": 1,
+        "FP": 229,
+        "FN": 0,
+        "TP": 95
+      },
+      "Pooled four-dataset frozen": {
+        "n_test": 325,
+        "accuracy": 0.7046153846153846,
+        "balanced_accuracy": 0.658466819221968,
+        "precision": 0.49523809523809526,
+        "recall": 0.5473684210526316,
+        "f1": 0.52,
+        "auc": 0.7,
+        "TN": 177,
+        "FP": 53,
+        "FN": 43,
+        "TP": 52
+      }
+    },
+    "REFUGE": {
+      "ACRIMA-only frozen": {
+        "n_test": 400,
+        "accuracy": 0.1025,
+        "balanced_accuracy": 0.5013888888888889,
+        "precision": 0.10025062656641603,
+        "recall": 1.0,
+        "f1": 0.18223234624145787,
+        "auc": 0.5833680555555556,
+        "TN": 1,
+        "FP": 359,
+        "FN": 0,
+        "TP": 40
+      },
+      "Pooled four-dataset frozen": {
+        "n_test": 400,
+        "accuracy": 0.78,
+        "balanced_accuracy": 0.6777777777777778,
+        "precision": 0.2391304347826087,
+        "recall": 0.55,
+        "f1": 0.3333333333333333,
+        "auc": 0.7792361111111111,
+        "TN": 290,
+        "FP": 70,
+        "FN": 18,
+        "TP": 22
+      }
+    },
+    "RIM-ONE r3": {
+      "ACRIMA-only frozen": {
+        "n_test": 25,
+        "accuracy": 0.32,
+        "balanced_accuracy": 0.5,
+        "precision": 0.32,
+        "recall": 1.0,
+        "f1": 0.48484848484848486,
+        "auc": 0.5147058823529411,
+        "TN": 0,
+        "FP": 17,
+        "FN": 0,
+        "TP": 8
+      },
+      "Pooled four-dataset frozen": {
+        "n_test": 25,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.8198529411764706,
+        "precision": 0.6363636363636364,
+        "recall": 0.875,
+        "f1": 0.7368421052631579,
+        "auc": 0.8676470588235294,
+        "TN": 13,
+        "FP": 4,
+        "FN": 1,
+        "TP": 7
+      }
+    }
+  }
+}

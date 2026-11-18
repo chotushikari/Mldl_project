@@ -1,0 +1,15 @@
+data/
+outputs/
+.venv/
+__pycache__/
+*.part
+*.pyc
+*.zip
+*.rar
+*.pt
+*.pth
+*.onnx
+*.joblib
+*.pkl
+.ipynb_checkpoints/
+.qodo/
