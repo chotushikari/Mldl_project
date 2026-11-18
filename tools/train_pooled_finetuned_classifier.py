@@ -39,7 +39,7 @@ torch.set_num_threads(max(1, min(8, torch.get_num_threads())))
 records = []
 
 
-def add(dataset, member, label, split, archive_kind="acrima", drishti_label=None):
+def add(dataset, member, label, split, archive_kind="acrima", drishti_label=None, source_split=""):
     records.append({
         "dataset": dataset,
         "member": member,
@@ -47,6 +47,7 @@ def add(dataset, member, label, split, archive_kind="acrima", drishti_label=None
         "split": split,
         "archive": archive_kind,
         "drishti_label": drishti_label,
+        "source_split": source_split,
     })
 
 
@@ -85,7 +86,7 @@ for i, row in enumerate(refuge_train):
     add("REFUGE", row["image"], int(row["label"]), "val" if i in set(refuge_val_idx) else "train", "combined")
 for row in refuge:
     if row["split"] in ("val", "test"):
-        add("REFUGE", row["image"], int(row["label"]), "test", "combined")
+        add("REFUGE", row["image"], int(row["label"]), "test", "combined", source_split=row["split"])
 
 drishti = list(csv.DictReader(Path("data/audit/drishti_gs1_kaggle_mirror_manifest.csv").open(encoding="utf-8")))
 drishti_train = [row for row in drishti if row["official_style_split"] == "train"]
@@ -219,16 +220,14 @@ probabilities = np.concatenate(probability_groups)
 truths = np.concatenate(truth_groups)
 
 test_rows = [records[i] for i in test_indices]
-metrics = {}
-for dataset in sorted(set(row["dataset"] for row in test_rows)):
-    dataset_rows = [row for row in test_rows if row["dataset"] == dataset]
-    dataset_positions = [i for i, row in enumerate(test_rows) if row["dataset"] == dataset]
+def score_positions(dataset_positions):
+    dataset_rows = [test_rows[i] for i in dataset_positions]
     y = np.asarray([row["label"] for row in dataset_rows])
     p = probabilities[dataset_positions]
     predicted = (p >= 0.5).astype(int)
     precision, recall, f1, _ = precision_recall_fscore_support(y, predicted, average="binary", zero_division=0)
     tn, fp, fn, tp = confusion_matrix(y, predicted, labels=[0, 1]).ravel()
-    metrics[dataset] = {
+    return {
         "n_test": len(dataset_rows),
         "accuracy": float(accuracy_score(y, predicted)),
         "precision": float(precision),
@@ -237,6 +236,15 @@ for dataset in sorted(set(row["dataset"] for row in test_rows)):
         "auc": float(roc_auc_score(y, p)) if len(np.unique(y)) == 2 else None,
         "TN": int(tn), "FP": int(fp), "FN": int(fn), "TP": int(tp),
     }
+
+
+metrics = {}
+for dataset in sorted(set(row["dataset"] for row in test_rows)):
+    metrics[dataset] = score_positions([i for i, row in enumerate(test_rows) if row["dataset"] == dataset])
+refuge_by_source_split = {
+    split: score_positions([i for i, row in enumerate(test_rows) if row["dataset"] == "REFUGE" and row["source_split"] == split])
+    for split in ("val", "test")
+}
 
 summary = {
     "status": "five_source_mirror_finetuned_partial",
@@ -250,18 +258,19 @@ summary = {
     "protocol": "ACRIMA fixed split; RIM-ONE fixed split excluding suspects; ORIGA A/B split; REFUGE supplied train/val/test; DRISHTI Kaggle mirror 40/10/51",
     "history": history,
     "test_metrics": metrics,
+    "refuge_test_metrics_by_source_split": refuge_by_source_split,
     "limitations": "DRISHTI-GS1 is a Kaggle mirror; ORIGA and REFUGE provenance caveats remain; final source policy not yet frozen.",
 }
 (root / "metrics.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
 with (root / "test_predictions.csv").open("w", newline="", encoding="utf-8") as stream:
     writer = csv.writer(stream)
-    writer.writerow(["dataset", "member", "true_label", "probability_glaucoma", "predicted_label"])
+    writer.writerow(["dataset", "member", "source_split", "true_label", "probability_glaucoma", "predicted_label"])
     current = 0
     for row, probability, truth, predicted in zip(
         [records[i] for i in test_indices], probabilities, truths, (probabilities >= 0.5).astype(int)
     ):
-        writer.writerow([row["dataset"], row["member"], int(truth), float(probability), int(predicted)])
+        writer.writerow([row["dataset"], row["member"], row["source_split"], int(truth), float(probability), int(predicted)])
 
 train_ds.close()
 val_ds.close()

@@ -46,7 +46,11 @@ if (finetuned/'metrics.json').exists():
     finetuned_metrics=read_json(finetuned/'metrics.json')
     finetuned_predictions=read_csv(finetuned/'test_predictions.csv') if (finetuned/'test_predictions.csv').exists() else []
     for dataset, metrics in finetuned_metrics['test_metrics'].items():
+        if dataset == 'REFUGE':
+            continue
         experiments.append({'id':'pooled_finetuned_'+dataset.lower().replace(' ','_').replace('-','_'),'task':'classification','dataset':dataset,'split':'fixed_test','source':'outputs/pooled_finetuned_classifier','metrics':metrics,'predictions':[row for row in finetuned_predictions if row['dataset']==dataset],'protocol':finetuned_metrics['protocol']})
+    for source_split, split_name in (('val', 'official_validation'), ('test', 'official_test')):
+        experiments.append({'id':'pooled_finetuned_refuge_'+source_split,'task':'classification','dataset':'REFUGE','split':split_name,'source':'outputs/pooled_finetuned_classifier','metrics':finetuned_metrics['refuge_test_metrics_by_source_split'][source_split],'predictions':[row for row in finetuned_predictions if row['dataset']=='REFUGE' and row['source_split']==source_split],'protocol':finetuned_metrics['protocol']})
 payload={'schema_version':1,'status':'partial_experiments','note':'Only completed measured experiments are listed. DRISHTI-GS1 results use a third-party Kaggle mirror and are not official-source verified.','assets':{'baseline_architecture':'outputs/architecture_baselines.png','classification_comparison':'outputs/acrima_resnet18_frozen/comparison.png','same_split_classifier_comparison':'outputs/classifier_common_split_comparison.png','rim_whole_vs_crop_comparison':'outputs/rim_whole_vs_crop/comparison.png'},'same_split_comparison':read_json(root/'classifier_common_split_comparison.json'),'rim_whole_vs_crop_comparison':read_json(crop/'metrics.json'),'pooled_segmentation':read_json(pooled_seg/'metrics.json') if (pooled_seg/'metrics.json').exists() else None,'drishti_gs1_mirror':{'segmentation':read_json(drishti_seg/'metrics.json') if (drishti_seg/'metrics.json').exists() else None,'classification':read_json(drishti_clf/'metrics.json') if (drishti_clf/'metrics.json').exists() else None},'experiments':experiments}
 dest=root/'website_results_partial.json'; dest.write_text(json.dumps(payload,indent=2),encoding='utf-8')
 print(dest)

@@ -228,9 +228,10 @@ lines = ['# Glaucoma Image Classification, Disc/Cup Segmentation and Explainable
          '## Architecture', 'A frozen or fine-tuned ResNet-18 predicts glaucoma; a two-channel U-Net segments disc and cup. The architecture diagram is saved at outputs/architecture_baselines.png. Grad-CAM targets the predicted class.', '',
          '## Results', '| Dataset | Pooled frozen AUC | Fine-tuned AUC |', '|---|---:|---:|']
 for dataset, old in pooled['test_metrics'].items():
-    new = fine['test_metrics'].get(dataset, {})
+    new = fine['refuge_test_metrics_by_source_split']['val'] if dataset == 'REFUGE' else fine['test_metrics'].get(dataset, {})
     lines.append(f"| {dataset} | {old['auc']:.3f} | {new.get('auc', float('nan')):.3f} |")
 lines += ['', f"Independent REFUGE official-test AUC for the pooled frozen model: {official['auc']:.3f} (n={official['n_test']}).", '',
+          f"Independent REFUGE official-test AUC for the fine-tuned model: {fine['refuge_test_metrics_by_source_split']['test']['auc']:.3f} (n={fine['refuge_test_metrics_by_source_split']['test']['n_test']}).", '',
           '### Segmentation', '| Dataset | Disc Dice | Cup Dice |', '|---|---:|---:|']
 for row in seg['test_metrics']:
     lines.append(f"| {row['dataset']} | {row['test_disc_dice']:.3f} | {row['test_cup_dice']:.3f} |")
